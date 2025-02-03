@@ -2,29 +2,26 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings } from "lucide-react";
+import { Settings, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const SettingsDialog = () => {
   const { toast } = useToast();
   const [keys, setKeys] = useState({
-    twitterApiKey: localStorage.getItem("twitter_api_key") || "",
-    twitterApiSecretKey: localStorage.getItem("twitter_api_secret_key") || "",
-    twitterAccessToken: localStorage.getItem("twitter_access_token") || "",
-    solanaPrivateKey: localStorage.getItem("solana_private_key") || "",
+    twitterApiKey: "",
+    twitterApiSecretKey: "",
+    twitterAccessToken: "",
+    solanaPrivateKey: "",
   });
 
   const handleSave = () => {
-    // Store keys in localStorage (Note: this is temporary, ideally these should be stored in a secure backend)
-    localStorage.setItem("twitter_api_key", keys.twitterApiKey);
-    localStorage.setItem("twitter_api_secret_key", keys.twitterApiSecretKey);
-    localStorage.setItem("twitter_access_token", keys.twitterAccessToken);
-    localStorage.setItem("solana_private_key", keys.solanaPrivateKey);
-
+    // Store keys only in memory (React state)
+    // This way they'll be cleared when the session ends
     toast({
       title: "Settings Saved",
-      description: "Your API keys have been securely saved.",
+      description: "Your API keys have been saved for this session only.",
     });
   };
 
@@ -39,6 +36,15 @@ const SettingsDialog = () => {
         <DialogHeader>
           <DialogTitle>API Settings</DialogTitle>
         </DialogHeader>
+        
+        <Alert variant="warning" className="mb-4">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            Keys are stored in memory only and will be cleared when you close your browser. 
+            Never share your private keys with anyone.
+          </AlertDescription>
+        </Alert>
+
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
             <Label htmlFor="twitterApiKey">Twitter API Key</Label>
