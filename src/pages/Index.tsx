@@ -103,7 +103,7 @@ const Index = () => {
                     <li>Purchase Amount: 0.1 SOL</li>
                     <li>Slippage: 15%</li>
                     <li>Priority Fees: Enabled</li>
-                    <li>Take Profit: 75% at 2x</li>
+                    <li>Take Profit: 75% at 3-5x</li>
                   </ul>
                 </AlertDescription>
               </Alert>
