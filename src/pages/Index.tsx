@@ -3,12 +3,23 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Rocket, Twitter, TrendingUp, Shield, Settings } from "lucide-react";
+import { AlertCircle, Rocket, Twitter, TrendingUp, Shield } from "lucide-react";
+import SettingsDialog from "@/components/SettingsDialog";
 
 const Index = () => {
   const { toast } = useToast();
 
   const handleSnipe = () => {
+    // Check if keys are set before executing snipe
+    if (!localStorage.getItem("solana_private_key")) {
+      toast({
+        title: "Missing Configuration",
+        description: "Please set up your Solana private key in settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
       title: "Snipe Executed",
       description: "Purchased 0.1 SOL with 15% slippage",
@@ -21,9 +32,7 @@ const Index = () => {
         {/* Header */}
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">Solana Sniper Bot</h1>
-          <Button variant="outline" size="icon">
-            <Settings className="h-4 w-4" />
-          </Button>
+          <SettingsDialog />
         </div>
 
         {/* Main Grid */}
