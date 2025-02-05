@@ -2,10 +2,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { Settings, AlertTriangle, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SettingsDialog = () => {
   const { toast } = useToast();
@@ -15,14 +17,99 @@ const SettingsDialog = () => {
     twitterAccessToken: "",
     solanaPrivateKey: "",
   });
+  const [newContract, setNewContract] = useState({
+    address: "",
+    name: "",
+  });
+  const [contracts, setContracts] = useState<Array<{id: string, contract_address: string, name: string | null}>>([]);
+
+  useEffect(() => {
+    fetchContracts();
+  }, []);
+
+  const fetchContracts = async () => {
+    const { data, error } = await supabase
+      .from('contract_addresses')
+      .select('*');
+    
+    if (error) {
+      toast({
+        title: "Error fetching contracts",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setContracts(data || []);
+  };
 
   const handleSave = () => {
     // Store keys only in memory (React state)
-    // This way they'll be cleared when the session ends
     toast({
       title: "Settings Saved",
       description: "Your API keys have been saved for this session only.",
     });
+  };
+
+  const handleAddContract = async () => {
+    if (!newContract.address) {
+      toast({
+        title: "Error",
+        description: "Please enter a contract address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const { error } = await supabase
+      .from('contract_addresses')
+      .insert([
+        {
+          contract_address: newContract.address,
+          name: newContract.name || null,
+        }
+      ]);
+
+    if (error) {
+      toast({
+        title: "Error adding contract",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Contract Added",
+      description: "The contract address has been added successfully.",
+    });
+
+    setNewContract({ address: "", name: "" });
+    fetchContracts();
+  };
+
+  const handleDeleteContract = async (id: string) => {
+    const { error } = await supabase
+      .from('contract_addresses')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast({
+        title: "Error deleting contract",
+        description: error.message,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Contract Deleted",
+      description: "The contract address has been removed.",
+    });
+
+    fetchContracts();
   };
 
   return (
@@ -34,10 +121,10 @@ const SettingsDialog = () => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>API Settings</DialogTitle>
+          <DialogTitle>Settings</DialogTitle>
         </DialogHeader>
         
-        <Alert variant="warning" className="mb-4">
+        <Alert className="mb-4">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Keys are stored in memory only and will be cleared when you close your browser. 
@@ -87,6 +174,45 @@ const SettingsDialog = () => {
             />
           </div>
           <Button onClick={handleSave} className="mt-4">Save Settings</Button>
+
+          <div className="border-t pt-4 mt-4">
+            <Label>Contract Addresses</Label>
+            <div className="flex gap-2 mt-2">
+              <Input
+                placeholder="Contract Address"
+                value={newContract.address}
+                onChange={(e) => setNewContract({ ...newContract, address: e.target.value })}
+              />
+              <Input
+                placeholder="Name (Optional)"
+                value={newContract.name}
+                onChange={(e) => setNewContract({ ...newContract, name: e.target.value })}
+              />
+              <Button onClick={handleAddContract} size="icon">
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <ScrollArea className="h-[200px] mt-4">
+              <div className="space-y-2">
+                {contracts.map((contract) => (
+                  <div key={contract.id} className="flex items-center justify-between p-2 border rounded">
+                    <div className="truncate">
+                      <p className="font-medium truncate">{contract.name || 'Unnamed Contract'}</p>
+                      <p className="text-sm text-muted-foreground truncate">{contract.contract_address}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteContract(contract.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
