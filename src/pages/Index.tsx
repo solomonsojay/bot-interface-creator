@@ -5,16 +5,17 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, Rocket, Twitter, TrendingUp, Shield } from "lucide-react";
 import SettingsDialog from "@/components/SettingsDialog";
+import SetupGuide from "@/components/SetupGuide";
 
 const Index = () => {
   const { toast } = useToast();
 
   const handleSnipe = () => {
-    // Check if keys are set before executing snipe
-    if (!localStorage.getItem("solana_private_key")) {
+    const apiKeys = localStorage.getItem('apiKeys');
+    if (!apiKeys) {
       toast({
         title: "Missing Configuration",
-        description: "Please set up your Solana private key in settings first.",
+        description: "Please set up your API keys in settings first.",
         variant: "destructive",
       });
       return;
@@ -36,7 +37,7 @@ const Index = () => {
         </div>
 
         {/* Main Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Twitter Feed */}
           <Card className="col-span-1">
             <CardHeader>
@@ -134,6 +135,9 @@ const Index = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Setup Guide */}
+        <SetupGuide />
       </div>
     </div>
   );

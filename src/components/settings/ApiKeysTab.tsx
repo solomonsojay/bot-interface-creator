@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ApiKeys {
@@ -15,17 +15,34 @@ interface ApiKeys {
 
 const ApiKeysTab = () => {
   const { toast } = useToast();
-  const [keys, setKeys] = useState<ApiKeys>({
-    twitterApiKey: "",
-    twitterApiSecretKey: "",
-    twitterAccessToken: "",
-    solanaPrivateKey: "",
+  const [keys, setKeys] = useState<ApiKeys>(() => {
+    const savedKeys = localStorage.getItem('apiKeys');
+    return savedKeys ? JSON.parse(savedKeys) : {
+      twitterApiKey: "",
+      twitterApiSecretKey: "",
+      twitterAccessToken: "",
+      solanaPrivateKey: "",
+    };
   });
 
+  useEffect(() => {
+    localStorage.setItem('apiKeys', JSON.stringify(keys));
+  }, [keys]);
+
   const handleSave = () => {
+    if (!keys.twitterApiKey || !keys.twitterApiSecretKey || !keys.twitterAccessToken || !keys.solanaPrivateKey) {
+      toast({
+        title: "Error",
+        description: "Please fill in all API keys",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    localStorage.setItem('apiKeys', JSON.stringify(keys));
     toast({
       title: "Settings Saved",
-      description: "Your API keys have been saved for this session only.",
+      description: "Your API keys have been saved for this session.",
     });
   };
 
