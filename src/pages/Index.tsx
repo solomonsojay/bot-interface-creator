@@ -6,25 +6,40 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertCircle, Rocket, Twitter, TrendingUp, Shield } from "lucide-react";
 import SettingsDialog from "@/components/SettingsDialog";
 import SetupGuide from "@/components/SetupGuide";
+import { botService } from "@/services/botService";
+import { getBotConfig } from "@/utils/botConfig";
 
 const Index = () => {
   const { toast } = useToast();
 
-  const handleSnipe = () => {
-    const apiKeys = localStorage.getItem('apiKeys');
-    if (!apiKeys) {
+  const handleSnipe = async () => {
+    const config = getBotConfig();
+    if (!config) {
       toast({
         title: "Missing Configuration",
-        description: "Please set up your API keys in settings first.",
+        description: "Please configure your bot endpoint and API key in settings first.",
         variant: "destructive",
       });
       return;
     }
     
-    toast({
-      title: "Snipe Executed",
-      description: "Purchased 0.1 SOL with 15% slippage",
-    });
+    try {
+      await botService.executeSnipe({
+        amount: 0.1,
+        slippage: 15,
+      });
+      
+      toast({
+        title: "Snipe Executed",
+        description: "Purchase order sent to bot successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Snipe Failed",
+        description: error instanceof Error ? error.message : "Failed to execute snipe",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
