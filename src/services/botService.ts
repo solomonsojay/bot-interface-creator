@@ -1,57 +1,54 @@
-import { BotConfig, getBotConfig } from "@/utils/botConfig";
+import { supabase } from "@/integrations/supabase/client";
+
+interface SnipeParams {
+  amount: number;
+  slippage: number;
+  priorityFee?: number;
+  contractAddress?: string;
+}
 
 class BotService {
-  private config: BotConfig | null = null;
-
-  constructor() {
-    this.config = getBotConfig();
-  }
-
-  async executeSnipe(params: { amount: number; slippage: number }) {
-    if (!this.config) {
-      throw new Error("Bot configuration not found");
-    }
-
+  async executeSnipe(params: SnipeParams) {
     try {
-      const response = await fetch(`${this.config.botEndpoint}/snipe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`,
+      const { data, error } = await supabase.functions.invoke('solana-bot', {
+        body: { 
+          ...params,
+          priorityFee: params.priorityFee || 5000,
         },
-        body: JSON.stringify(params),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to execute snipe');
-      }
-
-      return await response.json();
+      if (error) throw error;
+      return data;
     } catch (error) {
       console.error('Snipe execution failed:', error);
       throw error;
     }
   }
 
-  async getStatus() {
-    if (!this.config) {
-      throw new Error("Bot configuration not found");
-    }
-
+  async checkContract(address: string) {
     try {
-      const response = await fetch(`${this.config.botEndpoint}/status`, {
-        headers: {
-          'Authorization': `Bearer ${this.config.apiKey}`,
-        },
+      const { data, error } = await supabase.functions.invoke('solana-bot', {
+        body: { address },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to get bot status');
-      }
-
-      return await response.json();
+      if (error) throw error;
+      return data;
     } catch (error) {
-      console.error('Status check failed:', error);
+      console.error('Contract check failed:', error);
+      throw error;
+    }
+  }
+
+  async monitorKOLs() {
+    try {
+      const { data, error } = await supabase.functions.invoke('solana-bot', {
+        body: {},
+      });
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('KOL monitoring failed:', error);
       throw error;
     }
   }
