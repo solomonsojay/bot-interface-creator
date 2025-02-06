@@ -4,6 +4,10 @@
 
 **URL**: https://lovable.dev/projects/037dc268-2d60-400b-b7fa-66a1b96604b5
 
+## Bot Repository
+
+The Solana Sniper Bot code is available in a separate repository. Please contact support to get access to the bot repository. Once you have access, follow the setup guide in this dashboard to deploy the bot on your VPS.
+
 ## How can I edit this code?
 
 There are several ways of editing your application.
