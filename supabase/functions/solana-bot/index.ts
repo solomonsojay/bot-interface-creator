@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 import { createHmac } from "node:crypto";
 import { decode as base64Decode } from "https://deno.land/std/encoding/base64.ts";
@@ -75,6 +74,7 @@ async function executeRadiumTrade(params: {
   priorityFee: number;
 }) {
   try {
+    console.log("Executing Raydium trade with params:", params);
     const response = await fetch(`${RAYDIUM_API_URL}/swap`, {
       method: 'POST',
       headers: {
@@ -87,7 +87,9 @@ async function executeRadiumTrade(params: {
       throw new Error(`Raydium API error: ${response.statusText}`);
     }
     
-    return await response.json();
+    const result = await response.json();
+    console.log("Trade execution result:", result);
+    return result;
   } catch (error) {
     console.error('Raydium trade execution failed:', error);
     throw error;
@@ -96,9 +98,8 @@ async function executeRadiumTrade(params: {
 
 async function calculateProfitTargets(entryPrice: number) {
   const targets = [
-    { percentage: 200, amount: 40 }, // Take 40% profit at 2x
-    { percentage: 300, amount: 35 }, // Take 35% profit at 3x
-    { percentage: 500, amount: 0 },  // Hold remaining 25% as moonbag
+    { percentage: 200, amount: 60 }, // Take 60% profit at 2x
+    { percentage: 300, amount: 40 }, // Take remaining 40% profit at 3x
   ];
   
   return targets.map(target => ({
@@ -169,7 +170,7 @@ async function executeSnipe(params: SnipeParams) {
     priorityFee: params.priorityFee,
   });
   
-  // Calculate take-profit targets
+  // Calculate take-profit targets (now selling 100% of holdings)
   const profitTargets = await calculateProfitTargets(entryPrice);
   
   return {

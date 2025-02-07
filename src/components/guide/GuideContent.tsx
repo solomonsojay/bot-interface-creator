@@ -35,6 +35,12 @@ htop
 export NODE_OPTIONS="--max-old-space-size=4096"
 \`\`\`
 
+10. Take-Profit Strategy
+------------------------
+The bot implements an aggressive take-profit strategy:
+- Sells 60% of holdings when price reaches 2x entry
+- Sells remaining 40% when price reaches 3x entry
+
 For support or questions, please refer to our documentation or contact support team.
     `;
   };
