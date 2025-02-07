@@ -3,11 +3,16 @@ import { createHmac } from "node:crypto";
 
 const TWITTER_API_URL = "https://api.twitter.com/2";
 
-// Environment variables
 const TWITTER_API_KEY = Deno.env.get("TWITTER_CONSUMER_KEY");
 const TWITTER_API_SECRET = Deno.env.get("TWITTER_CONSUMER_SECRET");
 const TWITTER_ACCESS_TOKEN = Deno.env.get("TWITTER_ACCESS_TOKEN");
 const TWITTER_ACCESS_TOKEN_SECRET = Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET");
+
+function validateTwitterCredentials() {
+  if (!TWITTER_API_KEY || !TWITTER_API_SECRET || !TWITTER_ACCESS_TOKEN || !TWITTER_ACCESS_TOKEN_SECRET) {
+    throw new Error("Missing Twitter API credentials");
+  }
+}
 
 function generateOAuthSignature(
   method: string,
@@ -29,6 +34,8 @@ function generateOAuthSignature(
 }
 
 function generateOAuthHeader(method: string, url: string): string {
+  validateTwitterCredentials();
+
   const oauthParams = {
     oauth_consumer_key: TWITTER_API_KEY!,
     oauth_nonce: Math.random().toString(36).substring(2),
@@ -53,14 +60,27 @@ function generateOAuthHeader(method: string, url: string): string {
 }
 
 export async function getKOLTweets(username: string) {
-  const url = `${TWITTER_API_URL}/users/by/username/${username}/tweets?tweet.fields=created_at,text`;
-  const oauthHeader = generateOAuthHeader("GET", url);
-  
-  const response = await fetch(url, {
-    headers: {
-      Authorization: oauthHeader,
-    },
-  });
-  
-  return response.json();
+  if (!username) {
+    throw new Error("Username is required");
+  }
+
+  try {
+    const url = `${TWITTER_API_URL}/users/by/username/${username}/tweets?tweet.fields=created_at,text`;
+    const oauthHeader = generateOAuthHeader("GET", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        Authorization: oauthHeader,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Twitter API error: ${response.statusText}`);
+    }
+    
+    return response.json();
+  } catch (error) {
+    console.error(`Error fetching tweets for ${username}:`, error);
+    throw error;
+  }
 }

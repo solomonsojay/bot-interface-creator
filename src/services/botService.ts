@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 interface SnipeParams {
@@ -10,7 +11,7 @@ interface SnipeParams {
 class BotService {
   async executeSnipe(params: SnipeParams) {
     try {
-      const { data, error } = await supabase.functions.invoke('solana-bot', {
+      const { data, error } = await supabase.functions.invoke('solana-bot/snipe', {
         body: { 
           ...params,
           priorityFee: params.priorityFee || 5000,
@@ -27,7 +28,7 @@ class BotService {
 
   async checkContract(address: string) {
     try {
-      const { data, error } = await supabase.functions.invoke('solana-bot', {
+      const { data, error } = await supabase.functions.invoke('solana-bot/check-contract', {
         body: { address },
       });
 
@@ -41,7 +42,7 @@ class BotService {
 
   async monitorKOLs() {
     try {
-      const { data, error } = await supabase.functions.invoke('solana-bot', {
+      const { data, error } = await supabase.functions.invoke('solana-bot/monitor-kols', {
         body: {},
       });
 
