@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.0';
 import { createHmac } from "node:crypto";
 import { decode as base64Decode } from "https://deno.land/std/encoding/base64.ts";
@@ -6,6 +7,7 @@ import { decode as base64Decode } from "https://deno.land/std/encoding/base64.ts
 const TWITTER_API_URL = "https://api.twitter.com/2";
 const DEXSCREENER_API_URL = "https://api.dexscreener.com/latest/dex";
 const SOLSNIFFER_API_URL = "https://api.solsniffer.com/v1";
+const RAYDIUM_API_URL = "https://api.raydium.io/v2";
 
 // Environment variables
 const TWITTER_API_KEY = Deno.env.get("TWITTER_CONSUMER_KEY");
@@ -64,6 +66,47 @@ function generateOAuthHeader(method: string, url: string): string {
     .join(", ");
 }
 
+// Trading functions
+async function executeRadiumTrade(params: {
+  inputMint: string;
+  outputMint: string;
+  amount: number;
+  slippage: number;
+  priorityFee: number;
+}) {
+  try {
+    const response = await fetch(`${RAYDIUM_API_URL}/swap`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(params),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Raydium API error: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Raydium trade execution failed:', error);
+    throw error;
+  }
+}
+
+async function calculateProfitTargets(entryPrice: number) {
+  const targets = [
+    { percentage: 200, amount: 40 }, // Take 40% profit at 2x
+    { percentage: 300, amount: 35 }, // Take 35% profit at 3x
+    { percentage: 500, amount: 0 },  // Hold remaining 25% as moonbag
+  ];
+  
+  return targets.map(target => ({
+    ...target,
+    price: entryPrice * (1 + target.percentage / 100),
+  }));
+}
+
 // Bot functionality
 async function getKOLTweets(username: string) {
   const url = `${TWITTER_API_URL}/users/by/username/${username}/tweets?tweet.fields=created_at,text`;
@@ -101,12 +144,39 @@ interface SnipeParams {
 }
 
 async function executeSnipe(params: SnipeParams) {
-  // Here we would integrate with a Solana wallet and DEX
-  // This is a placeholder for the actual implementation
-  console.log("Executing snipe with params:", params);
+  console.log("Starting snipe execution with params:", params);
+  
+  // Check contract score first
+  const scoreData = await checkContractScore(params.contractAddress);
+  if (scoreData.score < 84) {
+    throw new Error(`Contract score too low: ${scoreData.score}`);
+  }
+  
+  // Get DEX data for price monitoring
+  const dexData = await getDexScreenerData(params.contractAddress);
+  const entryPrice = dexData.pairs[0]?.priceUsd;
+  
+  if (!entryPrice) {
+    throw new Error("Could not determine entry price");
+  }
+  
+  // Execute trade on Raydium
+  const tradeResult = await executeRadiumTrade({
+    inputMint: "So11111111111111111111111111111111111111112", // SOL
+    outputMint: params.contractAddress,
+    amount: params.amount,
+    slippage: params.slippage,
+    priorityFee: params.priorityFee,
+  });
+  
+  // Calculate take-profit targets
+  const profitTargets = await calculateProfitTargets(entryPrice);
+  
   return {
     success: true,
-    txHash: "sample_tx_hash",
+    txHash: tradeResult.txHash,
+    entryPrice,
+    profitTargets,
     timestamp: new Date().toISOString(),
   };
 }
