@@ -23,6 +23,19 @@ interface ContractCheckResponse {
   error?: string;
 }
 
+interface TradeHistoryItem {
+  token: string;
+  entryPrice: number;
+  exitPrice: number;
+  amount: number;
+  profit: number;
+  timestamp: string;
+}
+
+interface TradeHistoryResponse {
+  trades: TradeHistoryItem[];
+}
+
 class BotService {
   async executeSnipe(params: SnipeParams): Promise<TradeResponse> {
     try {
@@ -86,6 +99,27 @@ class BotService {
       throw error;
     }
   }
+
+  async getTradeHistory(): Promise<TradeHistoryResponse> {
+    try {
+      console.log('Fetching trade history');
+      const { data, error } = await supabase.functions.invoke('solana-bot/trade-history', {
+        body: {},
+      });
+
+      if (error) {
+        console.error('Trade history fetch error:', error);
+        throw error;
+      }
+
+      console.log('Trade history fetch successful:', data);
+      return data as TradeHistoryResponse;
+    } catch (error) {
+      console.error('Trade history fetch failed:', error);
+      throw error;
+    }
+  }
 }
 
 export const botService = new BotService();
+

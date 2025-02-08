@@ -1,6 +1,6 @@
 
 import { getKOLTweets } from "./twitter.ts";
-import { executeSnipe, checkContractScore } from "./trading.ts";
+import { executeSnipe, checkContractScore, getTradeHistory } from "./trading.ts";
 import type { SnipeParams } from "./types.ts";
 
 // CORS headers
@@ -94,6 +94,17 @@ Deno.serve(async (req) => {
         }
       }
 
+      case 'trade-history': {
+        try {
+          const trades = await getTradeHistory();
+          return new Response(JSON.stringify({ trades }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        } catch (error) {
+          return createErrorResponse('Failed to fetch trade history');
+        }
+      }
+
       default:
         return createErrorResponse('Invalid endpoint', 404);
     }
@@ -101,3 +112,4 @@ Deno.serve(async (req) => {
     return createErrorResponse('Internal server error');
   }
 });
+

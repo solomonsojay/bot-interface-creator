@@ -1,4 +1,3 @@
-
 import type { SnipeParams, ProfitTarget, TradeResponse } from "./types.ts";
 
 const DEXSCREENER_API_URL = "https://api.dexscreener.com/latest/dex";
@@ -136,4 +135,36 @@ export async function executeSnipe(params: SnipeParams): Promise<TradeResponse> 
       timestamp: new Date().toISOString(),
     };
   }
+}
+
+interface TradeHistoryItem {
+  token: string;
+  entryPrice: number;
+  exitPrice: number;
+  amount: number;
+  profit: number;
+  timestamp: string;
+}
+
+export async function getTradeHistory(): Promise<TradeHistoryItem[]> {
+  // This would typically fetch from a database, but for now we'll return mock data
+  // You can extend this to fetch actual trade history from your database
+  return [
+    {
+      token: "BONK",
+      entryPrice: 0.000001,
+      exitPrice: 0.000002,
+      amount: 0.1,
+      profit: 100,
+      timestamp: new Date().toISOString(),
+    },
+    {
+      token: "WEN",
+      entryPrice: 0.0000015,
+      exitPrice: 0.0000025,
+      amount: 0.15,
+      profit: 66.67,
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
+    },
+  ];
 }
