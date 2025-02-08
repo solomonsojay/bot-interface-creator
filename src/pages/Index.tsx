@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, Rocket, Twitter, TrendingUp, Shield } from "lucide-react";
+import { AlertCircle, Rocket, Twitter, TrendingUp, Shield, FileDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import SettingsDialog from "@/components/SettingsDialog";
 import SetupGuide from "@/components/SetupGuide";
@@ -163,9 +163,9 @@ const Index = () => {
                 </AlertDescription>
               </Alert>
               <div className="space-y-2">
-                <Alert variant="warning">
+                <Alert variant="destructive">
                   <Shield className="h-4 w-4" />
-                  <AlertTitle>Safety First</AlertTitle>
+                  <AlertTitle>Safety Check</AlertTitle>
                   <AlertDescription>
                     Contract score check will be performed before execution
                   </AlertDescription>

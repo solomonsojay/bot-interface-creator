@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -25,9 +26,9 @@ const SetupGuide = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle>Solana Sniper Bot Setup Guide</CardTitle>
+        <CardTitle>Complete Setup Guide</CardTitle>
         <CardDescription>
-          Complete setup instructions with command-line examples for deploying and configuring the bot
+          Step-by-step instructions for deploying and configuring the Solana Sniper Bot system
         </CardDescription>
       </CardHeader>
       <CardContent>
